@@ -1,0 +1,25 @@
+before_script:
+  - node -v
+  - npm -v
+
+variables:
+  CI_REGISTRY_IMAGE: registry.nimrc.com/evermark
+
+stages:
+  - release
+
+image_build:
+  stage: release
+  image: docker:latest
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_TLS_CERTDIR: ""
+  services:
+    - name: docker:stable-dind
+      command: ["--insecure-registry=registry.nimrc.com"]
+  before_script:
+    - docker info
+  script:
+    - docker build -t "${CI_REGISTRY_IMAGE}:latest" .
+    - docker push "${CI_REGISTRY_IMAGE}:latest"

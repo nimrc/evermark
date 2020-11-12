@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+'use strict';
+
+const Yinxiang = require('./libs/yinxiang');
+const Markdown = require('./libs/markdown');
+const Sync     = require('./libs/sync');
+const logger   = require('./libs/logger');
+const fs       = require('./libs/fs');
+const config   = require('./config');
+
+(async () => {
+    let docs   = process.argv.slice(2);
+    let client = new Yinxiang(config.evernote);
+
+    try {
+        await client.sync();
+    } catch (e) {
+        logger.error(e);
+        process.exit(1);
+    }
+
+    const css  = await fs.getTheme('ting');
+    const md   = new Markdown({ css });
+    const sync = new Sync({ client: client, md: md });
+
+    for (let doc of docs)
+        await sync.exec(doc);
+})();
